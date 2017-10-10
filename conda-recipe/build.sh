@@ -1,5 +1,5 @@
 #!/bin/bash
-blob=0f060ed744bc517e65b372a3008695a6836ef70d
+blob=master
 
 wget https://raw.githubusercontent.com/knights-lab/NINJA-OPS/${blob}/bin/ninja.py -O $PREFIX/bin/ninja.py
 chmod +x $PREFIX/bin/ninja.py
