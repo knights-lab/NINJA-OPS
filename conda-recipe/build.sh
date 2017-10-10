@@ -1,7 +1,7 @@
 #!/bin/bash
-blob=28a14264fc963cba460044d4610f2d4b4a04dbd5
+blob=0f060ed744bc517e65b372a3008695a6836ef70d
 
-wget https://github.com/knights-lab/NINJA-OPS/${blob}/bin/ninja.py -O $PREFIX/bin/ninja.py
+wget https://raw.githubusercontent.com/knights-lab/NINJA-OPS/${blob}/bin/ninja.py -O $PREFIX/bin/ninja.py
 chmod +x $PREFIX/bin/ninja.py
 
 binaries="\
