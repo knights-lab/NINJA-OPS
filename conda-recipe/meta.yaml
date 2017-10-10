@@ -1,0 +1,11 @@
+﻿package:
+  name: ninja_ops
+  version: "1.5.2"
+
+source:
+  git_url: https://github.com/knights-lab/NINJA-OPS
+
+requirements:
+  run:
+  - python
+  - bowtie2
