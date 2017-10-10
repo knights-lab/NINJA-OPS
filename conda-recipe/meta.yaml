@@ -21,7 +21,6 @@ about:
   summary: NINJA Is Not Just Another - OTU Picking Solution -- NINJA-OPS
   home: https://github.com/knights-lab/NINJA-OPS
   license: ISC
-  license_file: license_isc.txt
 
 test:
   commands:
