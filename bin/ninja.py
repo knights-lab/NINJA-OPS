@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+from __future__ import print_function, division
 import timeit
 import argparse
 import os
@@ -8,7 +8,8 @@ from subprocess import Popen, PIPE
 import sys
 import shutil
 import multiprocessing
-__version__ = "1.5.1"
+
+__version__ = "1.5.2"
 
 ###
 #   CLASSES
@@ -56,14 +57,14 @@ def get_args(p):
                    help="Input fasta file (use \"input1.fna,input2.fna\" for paired-end) [required].")
     p.add_argument("-o", "--output",
                    type = str,
-                   default = '.',
+                   default = os.getcwd(),
                    metavar = '',
                    help = "Output folder (default current directory)")
     p.add_argument("-b", "--database",
                    type = str,
-                   default = 'greengenes97',
+                   default = os.getcwd(),
                    metavar = '',
-                   help = "Name of database folder in ninja top-level directory; folder must contain bowtie2 index with basename the same as the folder, a taxonomy file named basename.taxonomy, and a ninja db map (output from ninja_prep) named basename.db [default %(default)s]")
+                   help = "Path to the database folder for ninja; folder must contain bowtie2 index with basename the same as the folder, a taxonomy file named basename.taxonomy, and a ninja db map (output from ninja_prep) named basename.db [default %(default)s]")
     p.add_argument("-t", "--trim",
                    type = int,
                    default = -1,
@@ -133,7 +134,6 @@ def get_args(p):
 
 # Checks if args work. Takes args and parser as input
 def check_args(args, p):
-
     if args['input'] is None:
         p.print_help()
         sys.exit('\nPlease include an input sequences file in fasta format.')
@@ -257,15 +257,10 @@ def ninja_filter(inputSeqsFile, inputSeqsFile2, file_prefix, trim, trim2, RC, de
     # Sets the relevant binaries for mac and windows support.
     ninjaDirectory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     ninjaDirectory = os.path.abspath(os.path.join(ninjaDirectory, os.pardir))
-    if sys.platform.startswith("darwin") or sys.platform.startswith("os"):      # Mac
-      ninjaFilterFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_filter_mac"))
-    elif sys.platform.startswith("win32") or sys.platform.startswith("cygwin"):   # Windows and cygwin
-      ninjaFilterFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_filter.exe"))
-    else:   # Linux
-        ninjaFilterFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_filter_linux"))
+
+    ninjaFilterFile = "ninja_filter"
 
     argDenoising = 'D ' + str(denoising)
-
     # Runs ninja_filter. Run in shell only on Mac
     cmd = ""
     cmd = '"' + ninjaFilterFile + '"'
@@ -362,16 +357,8 @@ def ninja_compact(alignmentsFile, masterFastaFile, logger, alignmentsFileCompact
       alignmentsFileCompacted = alignmentsFile
       alignmentsFile = os.path.splitext(alignmentsFile)[0]+'_uncompacted.txt'
       shutil.move(alignmentsFileCompacted, alignmentsFile)
-
-  # Sets the relevant binaries for mac and windows support.
-  ninjaDirectory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-  ninjaDirectory = os.path.abspath(os.path.join(ninjaDirectory, os.pardir))
-  if sys.platform.startswith("darwin") or sys.platform.startswith("os"):      # Mac
-    ninjaCompactFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_compact_mac"))
-  elif sys.platform.startswith("win32") or sys.platform.startswith("cygwin"):   # Windows and cygwin
-    ninjaCompactFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_compact.exe"))
-  else:   # Linux
-      ninjaCompactFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_compact_linux"))
+  
+  ninjaCompactFile = "ninja_compact"
             
   cmd = ['"' + ninjaCompactFile + '"', 
          '"' + alignmentsFile + '"',
@@ -399,16 +386,9 @@ def ninja_compact(alignmentsFile, masterFastaFile, logger, alignmentsFileCompact
 #           parseLog:         a utility file containing parsed sequences, used in post-processing and output automatically
 def ninja_parse(file_prefix, alignmentsFile, masterDBFile, taxMapFile, full_output,
         logger, legacy_table=False, run_with_shell=True, print_only=False):
-  # Sets the relevant binaries for mac and windows support.
-  ninjaDirectory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-  ninjaDirectory = os.path.abspath(os.path.join(ninjaDirectory, os.pardir))
-  if sys.platform.startswith("darwin") or sys.platform.startswith("os"):      # Mac
-    ninjaParseFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_parse_filtered_mac"))
-  elif sys.platform.startswith("win32") or sys.platform.startswith("cygwin"):   # Windows and cygwin
-    ninjaParseFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_parse_filtered.exe"))
-  else:   # Linux
-      ninjaParseFile = os.path.join(ninjaDirectory, os.path.join("bin", "ninja_parse_filtered_linux"))
-            
+
+  ninjaParseFile = "ninja_parse_filtered"
+
   cmd = ['"' + ninjaParseFile + '"', '"' + file_prefix + '"', '"' + alignmentsFile + '"', '"' + masterDBFile + '"']
   if taxMapFile is not None:
     cmd.append('"' + taxMapFile + '"')
@@ -502,8 +482,8 @@ def main(argparser):
     # Runs ninja pipeline
 
     # Gets ninja's directory relative to current working directory
-    ninjaDirectory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    ninjaDirectory = os.path.abspath(os.path.join(ninjaDirectory, os.pardir))
+    # ninjaDirectory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+    # ninjaDirectory = os.path.abspath(os.path.join(ninjaDirectory, os.pardir))
 
     # Checks for output subdirectory of current working directory. Makes it if necessary. 
     # Edits global output folder variable
@@ -540,15 +520,15 @@ def main(argparser):
 
     # Bowtie2 files
     alignmentsFile = os.path.join(outdir, "alignments.txt")
-    databasedir = os.path.join(ninjaDirectory, 'databases', args['database'])
+    databasedir = args['database']
     logger.log('NINJA-OPS database directory is ' + databasedir)
 
-    masterDBFile = os.path.abspath(os.path.join(databasedir, args['database'] + ".db"))
-    masterFastaFile = os.path.abspath(os.path.join(databasedir, args['database'] + ".tcf"))
-    bowtieDatabase = os.path.abspath(os.path.join(databasedir, args['database']))
+    masterDBFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".db"))
+    masterFastaFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".tcf"))
+    bowtieDatabase = os.path.abspath(os.path.join(databasedir, os.path.basename(databasedir)))
 
     # Ninja_parse files
-    taxMapFile = os.path.abspath(os.path.join(databasedir, args['database'] + ".taxonomy"))
+    taxMapFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".taxonomy"))
     if not os.path.exists(taxMapFile):
       taxMapFile = None
 
