@@ -16,32 +16,32 @@ __version__ = "1.5.2"
 ###
 
 class Logger(object):
-  """ A convenient logging object
-      Prints output to a given log file and/or stdout
-  """
-  def __init__(self, logfp=None, use_std_out=True):
-    # note: if logfp directories don't exist, make them.
+    """ A convenient logging object
+        Prints output to a given log file and/or stdout
+    """
+    def __init__(self, logfp=None, use_std_out=True):
+        # note: if logfp directories don't exist, make them.
 
-    if logfp is not None:
-      outdir = os.path.abspath(os.path.dirname(os.path.realpath(logfp)))
+        if logfp is not None:
+            outdir = os.path.abspath(os.path.dirname(os.path.realpath(logfp)))
 
-      # Checks for output directory. Makes it if necessary. 
-      if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    self.logfp = logfp
-    logf = open(logfp,'w')
-    logf.close()
-    self.use_std_out = use_std_out
+            # Checks for output directory. Makes it if necessary.
+            if not os.path.exists(outdir):
+                os.makedirs(outdir)
+        self.logfp = logfp
+        logf = open(logfp,'w')
+        logf.close()
+        self.use_std_out = use_std_out
 
-  def log(self, msg):
-    if not msg.endswith('\n'):
-      msg += '\n'        
-    if self.logfp is not None:
-      logf = open(self.logfp,'a')
-      logf.write(msg)
-      logf.close()
-    if self.use_std_out:
-      sys.stdout.write(msg)
+    def log(self, msg):
+        if not msg.endswith('\n'):
+            msg += '\n'
+        if self.logfp is not None:
+            logf = open(self.logfp,'a')
+            logf.write(msg)
+            logf.close()
+        if self.use_std_out:
+            sys.stdout.write(msg)
 
 ###
 #   UTILITY METHODS
@@ -99,7 +99,7 @@ def get_args(p):
                    type = float,
                    default = 1,
                    help = "Discards all reads that appear fewer than d times. No denoising/compaction = 0; " + \
-						  " Read compaction = 1 (maps shorter reads to longer neighbor), Moderate denoising = 2 (throws out all singleton reads);" + \
+                          " Read compaction = 1 (maps shorter reads to longer neighbor), Moderate denoising = 2 (throws out all singleton reads);" + \
                           " Aggressive denoising = 6 (nearly guaranteed to eliminate all sequencing error - although not PCR error - in most data sets) [default %(default)s]")
     p.add_argument("-K", "--suppress_OTU_compaction",
                    action = 'store_true',
@@ -139,7 +139,7 @@ def check_args(args, p):
         sys.exit('\nPlease include an input sequences file in fasta format.')
     if args['trim'] == -1 and args['trim2'] != -1:
         sys.exit('\nIf trim2 is specified you must also specify trim1 (set to large number for no trimming).')
-    
+
 
 # Checks if an input fasta file is formatted correctly for QIIME. Returns boolean.
 # Looks for data or titles with multiple lines and improper characters in seqs.
@@ -184,9 +184,9 @@ def read_fasta(f):
         else:
             data += line.strip()
     if title is None:
-      yield None
+        yield None
     else:
-      yield (title,data)
+        yield (title,data)
     return
 
 # Takes a list of [(title, seq), ...] tuples and prints as a FASTA file to the given filename
@@ -266,24 +266,24 @@ def ninja_filter(inputSeqsFile, inputSeqsFile2, file_prefix, trim, trim2, RC, de
     cmd = '"' + ninjaFilterFile + '"'
     cmd += ' ' + '"' + inputSeqsFile + '"'
     if inputSeqsFile2 is not None:
-      cmd += ' ' + 'PE "' + inputSeqsFile2 + '"'
+        cmd += ' ' + 'PE "' + inputSeqsFile2 + '"'
     cmd += ' ' + '"' + file_prefix + '"'
     cmd += ' ' + argTrim
     cmd += ' ' + argRC
     cmd += ' ' + argDenoising
     if full_output:
-      cmd += ' LOG'     
+        cmd += ' LOG'
     logger.log(cmd)
 
     if not print_only:
-      proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
-      stdout, stderr = proc.communicate()
-      logger.log(stdout)
-      if proc.returncode != 0:
-        logger.log(stderr + '\n')
-        raise ValueError("ERROR: Filtering failed. One possible explanation is a problem with input FASTA formatting. Please rerun with '--check_fasta'. Exiting.")
+        proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
+        stdout, stderr = proc.communicate()
+        logger.log(stdout)
+        if proc.returncode != 0:
+            logger.log(stderr + '\n')
+            raise ValueError("ERROR: Filtering failed. One possible explanation is a problem with input FASTA formatting. Please rerun with '--check_fasta'. Exiting.")
     return cmd
-      
+
 
 # Runs bowtie2. Uses two presets for ninja normal and max
 # INPUT     filteredSeqsFile:   filtered sequences output from ninja_filter
@@ -304,7 +304,7 @@ def bowtie2(bowtie2_cmd,filteredSeqsFile, filteredSeqsFile2, alignmentsFile, bow
     similarity = 1 - similarity     # Converts to similarity readable by bowtie2
 
     # Switches between ninja normal and max according to user input. Only runs in shell on Mac/linux
-    
+
     cmd = [bowtie2_cmd,'--no-head']
     cmd.append('-x ' + bowtieDatabase)
     cmd.append('-S ' + '"' + alignmentsFile + '"')
@@ -313,33 +313,33 @@ def bowtie2(bowtie2_cmd,filteredSeqsFile, filteredSeqsFile2, alignmentsFile, bow
     cmd.append('--rdg "0,1"')
     cmd.append('--rfg "0,1"')
     cmd.append('--score-min "L,0,-' + str(similarity) + '"')
-    if not both_strands: 
-      cmd.append('--norc')
+    if not both_strands:
+        cmd.append('--norc')
     if filteredSeqsFile2 is None:
-      cmd.append('-f ' + '"'+ filteredSeqsFile + '"')
+        cmd.append('-f ' + '"'+ filteredSeqsFile + '"')
     else:
-      cmd.append('-f -1 ' + '"'+ filteredSeqsFile + '"')
-      cmd.append('-2 ' + '"'+ filteredSeqsFile2 + '"')
-      cmd.append('--maxins ' + str(insert))
-      cmd.append('--no-mixed --no-discordant')
+        cmd.append('-f -1 ' + '"'+ filteredSeqsFile + '"')
+        cmd.append('-2 ' + '"'+ filteredSeqsFile2 + '"')
+        cmd.append('--maxins ' + str(insert))
+        cmd.append('--no-mixed --no-discordant')
     cmd.append('-p ' + str(threads))
     if mode != 'max':
         cmd.append('-k 1')
     if mode == 'fast':
-      cmd.append('--fast')
+        cmd.append('--fast')
     elif mode == 'max':
-      cmd.append('--very-sensitive')
+        cmd.append('--very-sensitive')
 
     # run command
     cmd = ' '.join(cmd)
     logger.log(cmd)
     if not print_only:
-      proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
-      stdout, stderr = proc.communicate()
-      logger.log(stdout)
-      if proc.returncode != 0:
-        logger.log(stderr + '\n')
-        raise ValueError("ERROR: Bowtie2 failed. Exiting.")
+        proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
+        stdout, stderr = proc.communicate()
+        logger.log(stdout)
+        if proc.returncode != 0:
+            logger.log(stderr + '\n')
+            raise ValueError("ERROR: Bowtie2 failed. Exiting.")
     return cmd
 
 # Runs ninja_compact.
@@ -349,31 +349,31 @@ def bowtie2(bowtie2_cmd,filteredSeqsFile, filteredSeqsFile2, alignmentsFile, bow
 #   alignmentsFileCompacted:  compacted alignment file output path from
 #                             ninja_compact. optional: default is to move
 #                             alignmentsFile to alignmentsFile_uncompacted.txt
-#                                       
+#
 def ninja_compact(alignmentsFile, masterFastaFile, logger, alignmentsFileCompacted=None, run_with_shell=True, print_only=False):
 
-  # move alignmentsFile if explicit new alignmentsFileCompacted not provided
-  if alignmentsFileCompacted is None:
-      alignmentsFileCompacted = alignmentsFile
-      alignmentsFile = os.path.splitext(alignmentsFile)[0]+'_uncompacted.txt'
-      shutil.move(alignmentsFileCompacted, alignmentsFile)
-  
-  ninjaCompactFile = "ninja_compact"
-            
-  cmd = ['"' + ninjaCompactFile + '"', 
+    # move alignmentsFile if explicit new alignmentsFileCompacted not provided
+    if alignmentsFileCompacted is None:
+        alignmentsFileCompacted = alignmentsFile
+        alignmentsFile = os.path.splitext(alignmentsFile)[0]+'_uncompacted.txt'
+        shutil.move(alignmentsFileCompacted, alignmentsFile)
+
+    ninjaCompactFile = "ninja_compact"
+
+    cmd = ['"' + ninjaCompactFile + '"',
          '"' + alignmentsFile + '"',
          '"' + masterFastaFile + '"',
          '"' + alignmentsFileCompacted + '"']
-  cmd = ' '.join(cmd)
-  logger.log(cmd)
-  if not print_only:
-    proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
-    stdout, stderr = proc.communicate()
-    logger.log(stdout)
-    if proc.returncode != 0:
-      logger.log(stderr + '\n')
-      raise ValueError("ERROR: Read compaction failed for unknown reason. Exiting.")
-  return cmd
+    cmd = ' '.join(cmd)
+    logger.log(cmd)
+    if not print_only:
+        proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
+        stdout, stderr = proc.communicate()
+        logger.log(stdout)
+        if proc.returncode != 0:
+            logger.log(stderr + '\n')
+            raise ValueError("ERROR: Read compaction failed for unknown reason. Exiting.")
+    return cmd
 
 
 # Runs ninja_parse_filtered.
@@ -387,25 +387,25 @@ def ninja_compact(alignmentsFile, masterFastaFile, logger, alignmentsFileCompact
 def ninja_parse(file_prefix, alignmentsFile, masterDBFile, taxMapFile, full_output,
         logger, legacy_table=False, run_with_shell=True, print_only=False):
 
-  ninjaParseFile = "ninja_parse_filtered"
+    ninjaParseFile = "ninja_parse_filtered"
 
-  cmd = ['"' + ninjaParseFile + '"', '"' + file_prefix + '"', '"' + alignmentsFile + '"', '"' + masterDBFile + '"']
-  if taxMapFile is not None:
-    cmd.append('"' + taxMapFile + '"')
-  if legacy_table:
-    cmd.append('--legacy')
-  if full_output:
-    cmd.append('LOG')
-  cmd = ' '.join(cmd)
-  logger.log(cmd)
-  if not print_only:
-    proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
-    stdout, stderr = proc.communicate()
-    logger.log(stdout)
-    if proc.returncode != 0:
-      logger.log(stderr + '\n')
-      raise ValueError("ERROR: Parsing failed. Exiting.")
-  return cmd
+    cmd = ['"' + ninjaParseFile + '"', '"' + file_prefix + '"', '"' + alignmentsFile + '"', '"' + masterDBFile + '"']
+    if taxMapFile is not None:
+        cmd.append('"' + taxMapFile + '"')
+    if legacy_table:
+        cmd.append('--legacy')
+    if full_output:
+        cmd.append('LOG')
+    cmd = ' '.join(cmd)
+    logger.log(cmd)
+    if not print_only:
+        proc = Popen(cmd,shell=run_with_shell,universal_newlines=True,stdout=PIPE,stderr=PIPE)
+        stdout, stderr = proc.communicate()
+        logger.log(stdout)
+        if proc.returncode != 0:
+            logger.log(stderr + '\n')
+            raise ValueError("ERROR: Parsing failed. Exiting.")
+    return cmd
 
 
 # Performs housekeeping on files, deleting the intermediate ones listed below
@@ -416,17 +416,17 @@ def ninja_parse(file_prefix, alignmentsFile, masterDBFile, taxMapFile, full_outp
 #           alignmentsFile:     main output of bowtie2
 #           parseLogFile:       parse log generated from ninja_parse_filter
 def clean(files):
-  for f in files:
-    if f is not None:
-      try:
-        os.remove(f)
-      except OSError as e:
-        myError = "INTERNAL ERROR: Can't find all files marked for moving and/or deletion. Check working directory and output folder."
-        logger.log(myError)
-        raise ValueError(myError)
+    for f in files:
+        if f is not None:
+            try:
+                os.remove(f)
+            except OSError as e:
+                myError = "INTERNAL ERROR: Can't find all files marked for moving and/or deletion. Check working directory and output folder."
+                logger.log(myError)
+                raise ValueError(myError)
 
 
-# Runs ninja, bowtie2 and then processes output. All files output in specified output folder. 
+# Runs ninja, bowtie2 and then processes output. All files output in specified output folder.
 # User must specify ninja's directory as an environment variable named 'NINJA_DIR'
 def main(argparser):
 
@@ -455,19 +455,19 @@ def main(argparser):
         if not check_fasta(open(fileName), logger):
             new_input_fasta = os.path.join(args['output'], "formatted_input_fasta.fna")
             logger.log("Warning: Input fasta formatted incorrectly for QIIME, e.g. sequences or title on multiple lines. Writing " + \
-                  "corrected file to " + new_input_fasta)
+                "corrected file to " + new_input_fasta)
             with open(fileName) as f:
                 write_fasta(read_fasta(f), new_input_fasta)
                 args['input'] = new_input_fasta
         if args['input2'] is not None:
-          fileName = args['input2']
-          if not check_fasta(open(fileName), logger):
-              new_input_fasta = os.path.join(args['output'], "formatted_input2_fasta.fna")
-              logger.log("Warning: Reverse input fasta formatted incorrectly for QIIME, e.g. sequences or title on multiple lines. Writing " + \
+            fileName = args['input2']
+            if not check_fasta(open(fileName), logger):
+                new_input_fasta = os.path.join(args['output'], "formatted_input2_fasta.fna")
+                logger.log("Warning: Reverse input fasta formatted incorrectly for QIIME, e.g. sequences or title on multiple lines. Writing " + \
                     "corrected file to " + new_input_fasta)
-              with open(fileName) as f:
-                  write_fasta(read_fasta(f), new_input_fasta)
-                  args['input2'] = new_input_fasta
+                with open(fileName) as f:
+                    write_fasta(read_fasta(f), new_input_fasta)
+                    args['input2'] = new_input_fasta
 
     RC = args['reverse_complement']
     similarity = args['similarity']
@@ -485,38 +485,38 @@ def main(argparser):
     # ninjaDirectory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     # ninjaDirectory = os.path.abspath(os.path.join(ninjaDirectory, os.pardir))
 
-    # Checks for output subdirectory of current working directory. Makes it if necessary. 
+    # Checks for output subdirectory of current working directory. Makes it if necessary.
     # Edits global output folder variable
     outdir = os.path.join(os.getcwd(), args['output'])
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     outdir = os.path.abspath(outdir)
-        
+
     # do not run commands with shell=TRUE on win32 or cygwin
     run_with_shell = not (sys.platform.startswith("win32") or sys.platform.startswith("cygwin"))
 
     # open /dev/null equivalent to catch unwanted subprocess output
     FNULL = open(os.devnull, 'w')
     try:
-      bowtie2_cmd = "bowtie2-align-s"
-      subprocess.check_call(bowtie2_cmd + " --version", shell=run_with_shell, stdout=FNULL, stderr=FNULL)
-    except subprocess.CalledProcessError as e:
-      try:
-        bowtie2_cmd = os.path.join(ninjaDirectory,"bowtie2-align-s")
+        bowtie2_cmd = "bowtie2-align-s"
         subprocess.check_call(bowtie2_cmd + " --version", shell=run_with_shell, stdout=FNULL, stderr=FNULL)
-      except subprocess.CalledProcessError as e:
-        myError = "ERROR: Bowtie2 executable not found in system path or top-level NINJA package folder. Please install bowtie2 and add its accompanying executables to the system path or place bowtie2-align-s in the top-level ninja package folder (not a subfolder). Check README.txt for additional instructions. Exiting."
-        logger.log(myError)
-        raise ValueError(myError)
+    except subprocess.CalledProcessError as e:
+        try:
+            bowtie2_cmd = os.path.join(ninjaDirectory,"bowtie2-align-s")
+            subprocess.check_call(bowtie2_cmd + " --version", shell=run_with_shell, stdout=FNULL, stderr=FNULL)
+        except subprocess.CalledProcessError as e:
+            myError = "ERROR: Bowtie2 executable not found in system path or top-level NINJA package folder. Please install bowtie2 and add its accompanying executables to the system path or place bowtie2-align-s in the top-level ninja package folder (not a subfolder). Check README.txt for additional instructions. Exiting."
+            logger.log(myError)
+            raise ValueError(myError)
 
     # Sets variables used in ninja calls. First, ninja_filter files
     file_prefix = os.path.join(outdir, "ninja")
 
     # Set paired-end file to None if this is not a paired-end run
     if(args['input2']) is not None:
-      pe_file = file_prefix + "2_filt.fa"
+        pe_file = file_prefix + "2_filt.fa"
     else:
-      pe_file = None 
+         pe_file = None
 
     # Bowtie2 files
     alignmentsFile = os.path.join(outdir, "alignments.txt")
@@ -530,7 +530,7 @@ def main(argparser):
     # Ninja_parse files
     taxMapFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".taxonomy"))
     if not os.path.exists(taxMapFile):
-      taxMapFile = None
+         taxMapFile = None
 
     otuTableFile = os.path.join(outdir, "otutable.biom")
     # Post-processing files
@@ -540,49 +540,49 @@ def main(argparser):
     # Runs ninja_filter, bowtie2 and ninja_parse. Processes ninja results, generating OTU map and a list of failed seqs
     logger.log("Running NINJA-OPS filter...")
     t1 = timeit.Timer(lambda:
-      ninja_filter(args['input'], args['input2'], file_prefix, args['trim'], args['trim2'], RC, denoising, logger, full_output,
-        run_with_shell=run_with_shell, print_only=args['print_only'])
+        ninja_filter(args['input'], args['input2'], file_prefix, args['trim'], args['trim2'], RC, denoising, logger, full_output,
+            run_with_shell=run_with_shell, print_only=args['print_only'])
     )
     logger.log("NINJA-OPS filter time: " + str(t1.timeit(1)))
 
     logger.log("Running Bowtie2...")
     t2 = timeit.Timer(lambda:
-      bowtie2(bowtie2_cmd,file_prefix + "_filt.fa", pe_file, alignmentsFile, bowtieDatabase, similarity, args['insert'], threads, mode,
-        logger, both_strands=args['both_strands'], run_with_shell=run_with_shell, print_only=args['print_only'])
+         bowtie2(bowtie2_cmd,file_prefix + "_filt.fa", pe_file, alignmentsFile, bowtieDatabase, similarity, args['insert'], threads, mode,
+            logger, both_strands=args['both_strands'], run_with_shell=run_with_shell, print_only=args['print_only'])
     )
     logger.log("Bowtie time: " + str(t2.timeit(1)))
 
     if not args['suppress_OTU_compaction']:
-      logger.log("Running NINJA-OPS compact...")
-      t2 = timeit.Timer(lambda:
-        ninja_compact(alignmentsFile, masterFastaFile, logger, run_with_shell=run_with_shell, print_only=args['print_only'])
-      )
-      logger.log("NINJA-OPS compact time: " + str(t2.timeit(1)))
+        logger.log("Running NINJA-OPS compact...")
+        t2 = timeit.Timer(lambda:
+            ninja_compact(alignmentsFile, masterFastaFile, logger, run_with_shell=run_with_shell, print_only=args['print_only'])
+        )
+        logger.log("NINJA-OPS compact time: " + str(t2.timeit(1)))
 
     logger.log("Running NINJA-OPS parse...")
     t3 = timeit.Timer(lambda:
-      ninja_parse(file_prefix, alignmentsFile, masterDBFile, taxMapFile, full_output, 
-          logger, legacy_table, run_with_shell=run_with_shell, print_only=args['print_only'])
+        ninja_parse(file_prefix, alignmentsFile, masterDBFile, taxMapFile, full_output,
+            logger, legacy_table, run_with_shell=run_with_shell, print_only=args['print_only'])
     )
     logger.log("NINJA-OPS parse time: " + str(t3.timeit(1)) + "\n")
 
     if not retain_intermediates:
-      to_remove = [file_prefix + "_filt.fa", pe_file, file_prefix + ".db", alignmentsFile]
-      if not args['suppress_OTU_compaction']:
-        to_remove.append(os.path.splitext(alignmentsFile)[0]+'_uncompacted.txt')
-      clean(to_remove)
+        to_remove = [file_prefix + "_filt.fa", pe_file, file_prefix + ".db", alignmentsFile]
+        if not args['suppress_OTU_compaction']:
+            to_remove.append(os.path.splitext(alignmentsFile)[0]+'_uncompacted.txt')
+        clean(to_remove)
 
 # Wrapper for main function, called from command line
 # Bare minimum args:
-#   -i "seqs.fna" 
+#   -i "seqs.fna"
 # Sample maximum args (note that reverse complmenting changes ALL read orientation):
 #   -i "seqs.fna" -o "output" -r -t 200 -mo 'max' -s 0.98 -d 1.005 -q
 if __name__=='__main__':
     # Parses command line arguments
     p = argparse.ArgumentParser(description = "NINJA-OPS: NINJA Is Not Just Another OTU Picking Solution (v" + __version__ +")\n" + \
-                                              "Knights Lab (www.ninja-ops.ninja)\n" + \
-                                              "This program outputs an otu table and map from sequence reads in fasta format.", 
-                                add_help = True, 
+                                                "Knights Lab (www.ninja-ops.ninja)\n" + \
+                                                "This program outputs an otu table and map from sequence reads in fasta format.",
+                                add_help = True,
                                 epilog ='NOTE: If one or more output files are empty, trying reverse complementing your input ' + \
                                         'sequences with -r')
 
