@@ -14,6 +14,19 @@ Moreover, NINJA is entirely free and open source.
 
 The latest NINJA version can always be found on Github (https://github.com/GabeAl/NINJA-OPS) or at http://ninja-ops.ninja.
 
+# Prerequisites
+1. Python 2.7+
+2. bowtie2
+
+# Installation
+
+## The CONDA way (personal install)
+1. Follow steps 1 and 2 of https://bioconda.github.io/ (including installing MiniConda 3.6 if you don't have miniconda)
+2. Do this in a terminal:
+```
+conda create -n ninja_ops -c knights-lab ninja_ops
+source activate ninja_ops
+```
 
 ## Citing NINJA-OPS
 Al-Ghalith GA, Montassier E, Ward HN, Knights D. NINJA-OPS: Fast Accurate Marker Gene Alignment Using Concatenated Ribosomes. PLoS Computational Biology. 2016 Jan;12(1).
