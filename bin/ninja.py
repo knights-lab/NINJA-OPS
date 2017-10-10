@@ -523,12 +523,12 @@ def main(argparser):
     databasedir = args['database']
     logger.log('NINJA-OPS database directory is ' + databasedir)
 
-    masterDBFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".db"))
-    masterFastaFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".tcf"))
+    masterDBFile = os.path.abspath(os.path.join(databasedir, os.path.basename(databasedir) + ".db"))
+    masterFastaFile = os.path.abspath(os.path.join(databasedir, os.path.basename(databasedir) + ".tcf"))
     bowtieDatabase = os.path.abspath(os.path.join(databasedir, os.path.basename(databasedir)))
 
     # Ninja_parse files
-    taxMapFile = os.path.abspath(os.path.join(databasedir, os.path.basename(datbasedir) + ".taxonomy"))
+    taxMapFile = os.path.abspath(os.path.join(databasedir, os.path.basename(databasedir) + ".taxonomy"))
     if not os.path.exists(taxMapFile):
          taxMapFile = None
 
